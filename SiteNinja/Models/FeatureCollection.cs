@@ -1,4 +1,6 @@
-﻿namespace SiteNinja.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace SiteNinja.Models
 {
     public class FeatureCollection
     {
@@ -8,6 +10,8 @@
         }
 
         public GeometryType Type => GeometryType.FeatureCollection;
+
+        [Required]
         public List<Feature> Features { get; set; }
     }
 }

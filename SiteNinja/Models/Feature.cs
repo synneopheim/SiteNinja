@@ -1,4 +1,6 @@
-﻿namespace SiteNinja.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace SiteNinja.Models
 {
     public class Feature
     {
@@ -9,7 +11,11 @@
         }
 
         public GeometryType GeometryType => GeometryType.Feature;
+
+        [Required]
         public Dictionary<string, double> Properties { get; set; }
+
+        [Required]
         public Geometry Geometry { get; set; }
     }
 }

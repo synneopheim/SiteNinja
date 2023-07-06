@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SiteNinja.Middleware;
 using SiteNinja.Models;
+using SiteNinja.Validation;
 
 namespace SiteNinja.Controllers
 {
@@ -15,10 +17,16 @@ namespace SiteNinja.Controllers
         }
 
         [HttpPost("building-limits")]
-        public string PostBuildingLimits(
+        public Task<IActionResult> PostBuildingLimits(
             [FromBody] SiteModel requestModel)
         {
-            return requestModel.building_limits.GetType().Name;
+            return ExceptionHandlingMiddleware.Execute(async () =>
+            {
+                var buildingLimits = RequestValidator.ValidateAndMapBuildingLimits(requestModel.building_limits);
+                var plateaus = RequestValidator.ValidateAndMapPlateaus(requestModel.height_plateaus);
+
+                return ProcessAndStore(buildingLimits, plateaus);
+            });
         }
 
         [HttpPut("building-limits")]
@@ -31,6 +39,13 @@ namespace SiteNinja.Controllers
         public string GetBuildingLimits()
         {
             return "Got some building limits.";
+        }
+
+        private Task ProcessAndStore(List<Polygon> buildingLimits, List<Plateau> plateaus)
+        {
+            throw new NotImplementedException("You got to process and store, but this " +
+                "method does not actually call the processing and storing methods yet. " +
+                "But, hey! You got passed the request validation!");
         }
     }
 

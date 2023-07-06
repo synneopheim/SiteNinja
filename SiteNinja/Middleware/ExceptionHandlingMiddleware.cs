@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
-using System.Security.Authentication;
 
 namespace SiteNinja.Middleware
 {
@@ -32,18 +31,24 @@ namespace SiteNinja.Middleware
                 return await operation();
 
             }
-            
+
             // 400 Bad Request - Used for validation of request headers, queries and body.
             catch (ValidationException exception)
             {
                 return new BadRequestObjectResult(AsErrorResponse(exception));
             }
-          
+
+            // 422 Unprocessable Content - Used for validation of request headers, queries and body.
+            catch (NotImplementedException exception)
+            {
+                return new UnprocessableEntityObjectResult(AsErrorResponse(exception));
+            }
+
             catch (ArgumentException exception)
             {
                 return new BadRequestObjectResult(AsErrorResponse(exception));
             }
-            
+
             // 500 Internal Server Error
             catch (Exception exception)
             {
