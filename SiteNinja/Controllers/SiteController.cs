@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SiteNinja.Application;
 using SiteNinja.Middleware;
 using SiteNinja.Models;
+using SiteNinja.Storage;
 using SiteNinja.Validation;
 
 namespace SiteNinja.Controllers
@@ -10,10 +12,13 @@ namespace SiteNinja.Controllers
     public class SiteController : ControllerBase
     {
         private readonly ILogger<SiteController> _logger;
+        private readonly ISiteDataStore _siteDataStore;
 
-        public SiteController(ILogger<SiteController> logger)
+        public SiteController(
+            ILogger<SiteController> logger)
         {
             _logger = logger;
+            _siteDataStore = new SiteDataStore();
         }
 
         [HttpPost("building-limits")]
@@ -25,7 +30,7 @@ namespace SiteNinja.Controllers
                 var buildingLimits = RequestValidator.ValidateAndMapBuildingLimits(requestModel.building_limits);
                 var plateaus = RequestValidator.ValidateAndMapPlateaus(requestModel.height_plateaus);
 
-                return ProcessAndStore(buildingLimits, plateaus);
+                return await ProcessAndStore(buildingLimits, plateaus);
             });
         }
 
@@ -41,11 +46,16 @@ namespace SiteNinja.Controllers
             return "Got some building limits.";
         }
 
-        private Task ProcessAndStore(List<Polygon> buildingLimits, List<Plateau> plateaus)
+        private async Task<string> ProcessAndStore(List<Polygon> buildingLimits, List<Plateau> plateaus)
         {
-            throw new NotImplementedException("You got to process and store, but this " +
-                "method does not actually call the processing and storing methods yet. " +
-                "But, hey! You got passed the request validation!");
+            var key = new Guid();
+            var splitBuildingLimits = SiteProcessor.FindIntersections(buildingLimits, plateaus);
+
+            var siteDataStorageModel = new SiteDateStorageModel(buildingLimits, plateaus, splitBuildingLimits);
+
+            _siteDataStore.SetData(key.ToString(), siteDataStorageModel, DateTimeOffset.Now.AddDays(1));
+
+            return "Stored processed site data.";
         }
     }
 
